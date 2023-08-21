@@ -1,0 +1,81 @@
+@import "./reset.css";
+:root {
+    --width-game-container: 1100px;
+    --height-game-container: 600px;
+}
+
+/* Общий блок*/
+.gamefield {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: rgb(160, 148, 167);
+}
+
+/* Игровое поле*/
+.game-container {
+    width: var(--width-game-container);
+    height: var(--height-game-container);
+
+    position: relative;
+
+    overflow: hidden;
+
+    background-color: #000;
+}
+
+/* Фон игрового поля */
+#slides img {
+    width: var(--width-game-container);
+    position: absolute;
+}
+
+/* Космический корабль */
+
+#spaceship {
+    position: absolute;
+
+    max-width: 35px;
+
+    transform: translate(calc(var(--width-game-container) / 2 - 50%), calc(var(--height-game-container) - 100%));
+}
+#spaceship img {
+    width: 35px;
+}
+
+/* Астероиды */
+
+.asteroid {
+    position: absolute;
+}
+
+
+/* Кнопка паузы */
+
+.button-container {
+    width: 50px;
+    height: 50px;
+    position: relative;
+
+    margin-left: 30px;
+
+    transition: transform .3s;
+}
+.button-container:hover {
+    transform: scale(1.2);
+}
+
+#pause {
+    background: transparent;
+    position: absolute;
+}
+
+.start {
+    display: block;
+}
+.stop {
+    display: none;
+}
