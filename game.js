@@ -57,9 +57,8 @@ gameButtom.addEventListener('click', () => {
         gameButtom.children[1].style.display = 'initial';
     } else {                                                    // Остановка игры движения фона
         cancelAnimationFrame(animationId);    
-        cancelAnimationFrame(spaceshipInfo.moveToTopId); // Отменяется анимация,
-                                                         //если корабль УЖЕ был в движении при нажатии паузы
-        cancelAnimationFrame(spaceshipInfo.moveToBottomId);
+        cancelAnimationFrame(spaceshipInfo.moveToTopId);    // Отменяется анимация,
+        cancelAnimationFrame(spaceshipInfo.moveToBottomId); //если корабль УЖЕ был в движении при нажатии паузы
         cancelAnimationFrame(spaceshipInfo.moveToLeftId);
         cancelAnimationFrame(spaceshipInfo.moveToRightId);
         gameButtom.children[1].style.display = 'none';
@@ -134,9 +133,8 @@ const spaceshipInfo = {                                 // Объект, из к
         if(this.collision) {
 
             cancelAnimationFrame(animationId);    
-            cancelAnimationFrame(spaceshipInfo.moveToTopId); // Отменяется анимация,
-                                                             //если корабль УЖЕ был в движении при нажатии паузы
-            cancelAnimationFrame(spaceshipInfo.moveToBottomId);
+            cancelAnimationFrame(spaceshipInfo.moveToTopId);    // Отменяется анимация,
+            cancelAnimationFrame(spaceshipInfo.moveToBottomId); //если корабль УЖЕ был в движении при нажатии паузы
             cancelAnimationFrame(spaceshipInfo.moveToLeftId);
             cancelAnimationFrame(spaceshipInfo.moveToRightId);
 
@@ -265,31 +263,19 @@ function getRandomIntInclusive(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
 }
 
-const asterodsCoordStorage = {
-
-    asteroidExistX: function(id, asteroidCoords, asteroidWidth) {
-        for (const key in asterodsCoordStorage) {
-            if (asterodsCoordStorage[key]) {
-                asterodsCoordStorage[id] = getRandomIntInclusive(0, gameContainer.clientWidth);
-                
-            }
-        }
-    }
-};
-
 // объекты для создания классом новых экземпляров астероидов
 
 let small = {
     name: 'small',
     asteroidWidth: 36,
-    speed: 1,
+    speed: 2,
     src: 'img/asteroids/asteroid_01.png',
 };
 
 let medium = {
     name: 'medium',
     asteroidWidth: 66,
-    speed: 1,
+    speed: 1.5,
     src: 'img/asteroids/asteroid_02.png',
 };
 
@@ -314,7 +300,7 @@ class AsteroidNew {
         this.src = null;
         // this.coordX  = getRandomIntInclusive(0, gameContainer.clientWidth);
         // this.coordX  = checkAsteroidExist(asteroids, this.coordX);
-        this.coordX  = checkAsteroidExist(asteroids);
+        this.coordX  = this.checkAsteroidExist(asteroids);
         Object.assign(this, obj); // разбивает полученный объект и присваевает параметры в созданный экземпляр класса
     }
 
@@ -332,6 +318,18 @@ class AsteroidNew {
 
         this.asteroid = getLastAsteroid;              // меняются свойства элемента в зависимости от создаваемого р-ра
         this.asteroidCoords = getCoords(this.asteroid);
+    }
+
+    checkAsteroidExist(array) {
+        let x = getRandomIntInclusive(0, gameContainer.clientWidth);
+    
+        array.forEach(element => {
+            if (element.asteroidCoords.x <= x <= element.asteroidCoords.x + element.asteroidWidth) {
+                // this.checkAsteroidExist(array);
+                // console.log('test');
+            }
+        });
+        return x;
     }
 
     asteroidMove() {
@@ -367,17 +365,6 @@ function asteroidRemove(array) {
             array.splice(index, 1);
         }
     });
-}
-
-function checkAsteroidExist(array) {
-    let x = getRandomIntInclusive(0, gameContainer.clientWidth);
-
-    array.forEach(element => {
-        if (element.asteroidCoords.x <= x <= element.asteroidCoords.x + element.asteroidWidth) {
-            // checkAsteroidExist(array, x);
-        }
-    });
-    return x;
 }
 
 // Коллизия
