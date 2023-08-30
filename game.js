@@ -76,91 +76,135 @@ function startGame() {
         backgroundAnimation(element);  
     });
 
-    spaceshipEngineAnimation();    // Анимация огня из сопл корабля
+    spaceshipInfo.renderSpiceship();
 
     createAsteroids();
     asteroids.forEach(element => {
         element.asteroidMove();
     });
     asteroidRemove(asteroids);
+
+    checkCollision(asteroids);
     
     animationId = requestAnimationFrame(startGame);
 }
 
 // Космический корабль
 
-const spaceshipImg = document.querySelectorAll('#spaceship img'); // Массив картинок в div`е космического корабля
+const spaceshipImg = document.querySelector('#spaceship img'),
+      spaceship = document.querySelector('#spaceship');
 
-spaceshipImg[0].style.display = 'block'; // Задаёт очевидные свойства дисплею изображению корабля,это проще чем в css
-spaceshipImg[1].style.display = 'none';
-
-let animationEngineId;                // Переменная через которую останавливается анимация сопл двигателя
-let startEngine = Date.now();
-function spaceshipEngineAnimation() {      // Меняет каждые 0.3 секунды изображения с кораблём для эффекта горения сопл
-
-    let timePassed = Date.now() - startEngine;
-    if (timePassed >= spaceshipInfo.speedEngine) {
-        spaceshipImg.forEach(element => {
-            if (element.style.display == 'none') {
-                element.style.display = 'block';
-            } else {
-                element.style.display = 'none';
-            }
-        });
-        startEngine = Date.now();
-    }
-}
-
-const spaceship = document.querySelector('#spaceship'); // div космического корабля
-
-const spaceshipCoords = getCoords(spaceship);
+// const spaceshipCoords = getCoords(spaceship);
 const spaceshipInfo = {                                 // Объект, из которого берутся параметры корабля
+    
+    coords: getCoords(spaceship),
+    
     moveToTopId: false,
     moveToBottomId: false,
     moveToLeftId: false,
     moveToRightId: false,
 
-    speedEngine: 300,       // скорость прокрутки огня сопл
+    collision: false,
+
+    startTimer: Date.now(),
+    engineSpeed: 300,       // скорость прокрутки огня сопл
+    explosionSpeed: 200,
     spaceshipSpeed: 5,      // скорость перемещения корабля
+
+    currentImg: 'img/spaceships/spaceship_1.png',
+    spiceshipAnimationSpeed: 0,
+
+    engineImg: [
+        'img/spaceships/spaceship_1.png',
+        'img/spaceships/spaceship_2.png',
+    ],
+    explosionImg: [
+        'img/SpaceshipExplosion/SpaceshipExplosion-1.png',
+        'img/SpaceshipExplosion/SpaceshipExplosion-2.png',
+        'img/SpaceshipExplosion/SpaceshipExplosion-3.png',
+        'img/SpaceshipExplosion/SpaceshipExplosion-4.png',
+        'img/SpaceshipExplosion/SpaceshipExplosion-5.png'
+    ],
+    explosionImgNumber: 0,
+
+    renderSpiceship: function() {
+        spaceshipImg.src = this.currentImg;
+        let timePassed = Date.now() - this.startTimer;
+
+        if(this.collision) {
+
+            cancelAnimationFrame(animationId);    
+            cancelAnimationFrame(spaceshipInfo.moveToTopId); // Отменяется анимация,
+                                                             //если корабль УЖЕ был в движении при нажатии паузы
+            cancelAnimationFrame(spaceshipInfo.moveToBottomId);
+            cancelAnimationFrame(spaceshipInfo.moveToLeftId);
+            cancelAnimationFrame(spaceshipInfo.moveToRightId);
+
+            if (timePassed >= this.explosionSpeed) {
+                if(this.explosionImgNumber >= this.explosionImg.length) {
+                    setInterval(spaceshipImg.remove(), this.explosionSpeed);
+
+                }   
+                if(this.explosionImgNumber < this.explosionImg.length) {
+                    this.currentImg = this.explosionImg[this.explosionImgNumber++];
+                    this.startTimer = Date.now();
+                }
+            }
+            return;
+        }
+
+        if (timePassed >= this.engineSpeed) {
+            if(this.currentImg == this.engineImg[0]) {
+                this.currentImg = this.engineImg[1];
+            } else {
+                this.currentImg = this.engineImg[0];
+            }
+            this.startTimer = Date.now();
+        }
+    },
+
+    // spiceshipRun: function() {
+    //     this.renderSpiceship();
+    // },
 };
+spaceshipInfo.renderSpiceship();
+
+// Движение космического корабля
 function spaceshipMove(x, y) {         // Вспомогательная функция, перезаписывающая translate в div космического корабля
     spaceship.style.transform = `translate(${x}px, ${y}px)`;
 }
 function spaceshipMoveToTop() {        // Функция смещает translate на значение скорости и проверяет не выход за край
-    let newCoordY = spaceshipCoords.y - spaceshipInfo.spaceshipSpeed;
+    let newCoordY = spaceshipInfo.coords.y - spaceshipInfo.spaceshipSpeed;
     if(newCoordY >= 0) {
-        spaceshipMove(spaceshipCoords.x, newCoordY);
-        spaceshipCoords.y = newCoordY;
+        spaceshipMove(spaceshipInfo.coords.x, newCoordY);
+        spaceshipInfo.coords.y = newCoordY;
 
         spaceshipInfo.moveToTopId = requestAnimationFrame(spaceshipMoveToTop);
     }
 }
-
-// Движение космического корабля
-
 function spaceshipMoveToBottom() {
-    let newCoordY = spaceshipCoords.y + spaceshipInfo.spaceshipSpeed;
+    let newCoordY = spaceshipInfo.coords.y + spaceshipInfo.spaceshipSpeed;
     if(newCoordY <= gameContainer.offsetHeight - spaceship.offsetHeight) {
-        spaceshipMove(spaceshipCoords.x, newCoordY);
-        spaceshipCoords.y = newCoordY;
+        spaceshipMove(spaceshipInfo.coords.x, newCoordY);
+        spaceshipInfo.coords.y = newCoordY;
 
         spaceshipInfo.moveToBottomId = requestAnimationFrame(spaceshipMoveToBottom);
     }
 }
 function spaceshipMoveToLeft() {
-    let newCoordX = spaceshipCoords.x - spaceshipInfo.spaceshipSpeed;
+    let newCoordX = spaceshipInfo.coords.x - spaceshipInfo.spaceshipSpeed;
     if(newCoordX >= 0) {
-        spaceshipMove(newCoordX, spaceshipCoords.y);
-        spaceshipCoords.x = newCoordX;
+        spaceshipMove(newCoordX, spaceshipInfo.coords.y);
+        spaceshipInfo.coords.x = newCoordX;
 
         spaceshipInfo.moveToLeftId = requestAnimationFrame(spaceshipMoveToLeft);
     }
 }
 function spaceshipMoveToRight() {
-    let newCoordX = spaceshipCoords.x + spaceshipInfo.spaceshipSpeed;
+    let newCoordX = spaceshipInfo.coords.x + spaceshipInfo.spaceshipSpeed;
     if(newCoordX <= gameContainer.offsetWidth - spaceship.offsetWidth) {
-        spaceshipMove(newCoordX, spaceshipCoords.y);
-        spaceshipCoords.x = newCoordX;
+        spaceshipMove(newCoordX, spaceshipInfo.coords.y);
+        spaceshipInfo.coords.x = newCoordX;
 
         spaceshipInfo.moveToRightId = requestAnimationFrame(spaceshipMoveToRight);
     }
@@ -234,23 +278,30 @@ const asterodsCoordStorage = {
 };
 
 // объекты для создания классом новых экземпляров астероидов
+
 let small = {
     name: 'small',
-    speed: 3,
+    asteroidWidth: 36,
+    speed: 1,
     src: 'img/asteroids/asteroid_01.png',
 };
 
 let medium = {
     name: 'medium',
-    speed: 2,
+    asteroidWidth: 66,
+    speed: 1,
     src: 'img/asteroids/asteroid_02.png',
 };
 
 let large = {
     name: 'large',
+    asteroidWidth: 68,
     speed: 1,
     src: 'img/asteroids/asteroid_03.png',
 };
+
+let typeOfAsteroids = [small, medium, large];
+let asteroids = [];
 
 class AsteroidNew {
     constructor(obj) {
@@ -262,7 +313,8 @@ class AsteroidNew {
         this.asteroidWidth = null;
         this.src = null;
         // this.coordX  = getRandomIntInclusive(0, gameContainer.clientWidth);
-        this.coordX  = asteroidExist(asteroids, this.coordX);
+        // this.coordX  = checkAsteroidExist(asteroids, this.coordX);
+        this.coordX  = checkAsteroidExist(asteroids);
         Object.assign(this, obj); // разбивает полученный объект и присваевает параметры в созданный экземпляр класса
     }
 
@@ -270,20 +322,16 @@ class AsteroidNew {
         let asteroidDiv = document.createElement('div');                // создаётся div астероида
         asteroidDiv.classList.add('asteroid');
         gameContainer.append(asteroidDiv);
+        asteroidDiv.style.transform = `translate(${this.coordX}px, -100%)`;
 
         let asteroidImg = document.createElement('img');                // создаётся изображение внутри
         asteroidImg.src = this.src;
-        let asteroids = document.querySelectorAll('.asteroid');
-        let lastAsteroid = asteroids[asteroids.length - 1];
+        let allAsteroids = document.querySelectorAll('.asteroid');
+        let getLastAsteroid = allAsteroids[allAsteroids.length - 1];
+        getLastAsteroid.append(asteroidImg);
 
-        lastAsteroid.append(asteroidImg);
-    
-        asteroidDiv.style.transform = `translate(${this.coordX}px, -100%)`;
-
-        this.asteroid = lastAsteroid;                   // меняются свойства элемента в зависимости от создаваемого р-ра
+        this.asteroid = getLastAsteroid;              // меняются свойства элемента в зависимости от создаваемого р-ра
         this.asteroidCoords = getCoords(this.asteroid);
-
-        this.asteroidWidth = this.asteroid.offsetWidth;
     }
 
     asteroidMove() {
@@ -294,18 +342,15 @@ class AsteroidNew {
         }
         this.asteroid.style.transform = `translate(${this.coordX}px, ${newYCoord}px)`;
         this.asteroidCoords.y = newYCoord;
-        console.log(document.querySelector('.asteroid').offsetWidth);
     }
 }
 
-let typeOfAsteroids = [small, medium, large];
-let asteroids = [];
-
-let startCreateAsteroid = Date.now();
+let startCreateAsteroid = Date.now(); // создание астероида каждые intervalCreatAsteroid секунд
+let intervalCreatAsteroid = 1000;
 function createAsteroids() {
     let timePassed = Date.now() - startCreateAsteroid;
 
-    if(timePassed > 1000) {
+    if(timePassed > intervalCreatAsteroid) {
         let aster = new AsteroidNew(typeOfAsteroids[getRandomIntInclusive(0, typeOfAsteroids.length - 1)]);
         aster.createAsteroid();
 
@@ -324,12 +369,27 @@ function asteroidRemove(array) {
     });
 }
 
-function asteroidExist(array, x) {
-    x = getRandomIntInclusive(0, gameContainer.clientWidth);
+function checkAsteroidExist(array) {
+    let x = getRandomIntInclusive(0, gameContainer.clientWidth);
+
     array.forEach(element => {
-        if (element.coordX <= x <= element.coordX + element.asteroidWidth) {
-            asteroidExist(array, x);
+        if (element.asteroidCoords.x <= x <= element.asteroidCoords.x + element.asteroidWidth) {
+            // checkAsteroidExist(array, x);
         }
     });
     return x;
 }
+
+// Коллизия
+
+function checkCollision(array) {
+    array.forEach(element => {
+        if (element.asteroidCoords.y + element.asteroidWidth > spaceshipInfo.coords.y &&
+            element.asteroidCoords.y < spaceshipInfo.coords.y + spaceship.offsetWidth &&
+            element.asteroidCoords.x < spaceshipInfo.coords.x + spaceship.offsetWidth && 
+            element.asteroidCoords.x + element.asteroidWidth > spaceshipInfo.coords.x) {
+                spaceshipInfo.collision = true;
+        } 
+    });
+}
+

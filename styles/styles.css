@@ -37,6 +37,7 @@
 
 #spaceship {
     position: absolute;
+    z-index: 10;
 
     max-width: 35px;
 
