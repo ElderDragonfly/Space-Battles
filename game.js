@@ -1,4 +1,5 @@
 'use strict';
+import {checkCollision, getRandomIntInclusive, getCoords, removeFromArray} from './helper.js';
 
 window.addEventListener('keydown', (event) => {
     event.preventDefault();
@@ -18,19 +19,6 @@ slidesImg.forEach((element, item) => {                               // Прим
 
 // Анимация движения фона
 let speed = 0.5;
-
-function getCoords(item) {                            // Получение и возврат как числа координат по X и Y объекта
-    const matrix = window.getComputedStyle(item).transform;
-    const array = matrix.split(',');
-    const coordY = array[array.length - 1];
-    const coordX = array[array.length - 2];
-    const numericY = parseFloat(coordY);
-    const numericX = parseFloat(coordX);
-    return {
-        y: numericY,
-        x: numericX
-    };
-}
 
 function backgroundAnimation(element) {                         // Поднимает переданный элемент за видимое игровое поле,
                                                                 // если он опустился за его высоту
@@ -84,13 +72,14 @@ function startGame() {
     asteroids.forEach(element => {
         element.asteroidMove();
     });
-    asteroidRemove(asteroids);
+    removeFromArray(asteroids, gameContainer.offsetHeight);
     checkCollision(asteroids, spaceshipInfo);
 
     createMissles();
     missles.forEach(element => {
         element.move();
     });
+    removeFromArray(missles, gameContainer.offsetHeight);
 
     animationId = requestAnimationFrame(startGame);
 }
@@ -113,6 +102,7 @@ const spaceshipInfo = {
     moveToRightId: false,
 
     collision: false,
+    canRemove: false,
 
     startTimer: Date.now(),
     engineSpeed: 300,       // скорость прокрутки огня сопл
@@ -149,7 +139,9 @@ const spaceshipInfo = {
 
             if (timePassed >= this.explosionSpeed) {
                 if(this.explosionImgNumber >= this.explosionImg.length) {
-                    setInterval(spaceshipImg.remove(), this.explosionSpeed);
+                    setInterval(() => {
+                        spaceship.remove();
+                    }, this.explosionSpeed);
 
                 }   
                 if(this.explosionImgNumber < this.explosionImg.length) {
@@ -262,18 +254,12 @@ document.addEventListener('keyup', (event) => { // Отмена анимации
 
 // Астероиды
 
-// рандомайзер
-function getRandomIntInclusive(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
-}
-
 // объекты для создания классом новых экземпляров астероидов
 
 let small = {
     name: 'small',
     asteroidWidth: 36,
+    asteroidHeight: 36,
     speed: 2,
     src: 'img/asteroids/asteroid_01.png',
 };
@@ -281,6 +267,7 @@ let small = {
 let medium = {
     name: 'medium',
     asteroidWidth: 66,
+    asteroidHeight: 66,
     speed: 1.5,
     src: 'img/asteroids/asteroid_02.png',
 };
@@ -288,6 +275,7 @@ let medium = {
 let large = {
     name: 'large',
     asteroidWidth: 68,
+    asteroidHeight: 68,
     speed: 1,
     src: 'img/asteroids/asteroid_03.png',
 };
@@ -298,17 +286,18 @@ let asteroids = [];
 class AsteroidNew {
     constructor(obj) {
         this.name = null;
-        // this.id = null;
         this.speed = null;
         this.asteroidDiv = null;
-        this.asteroid = null;
-        this.asteroidCoords = {};
+        this.asteroidImg = null;
+        this.coords = {};
         this.asteroidWidth = null;
+        this.asteroidHeight = null;
         this.src = null;
         this.coordX  = this.checkAsteroidExist(asteroids);
 
         this.collision = false;
-        this.stastTimer = Date.now();
+        this.canRemove = false;
+        this.startTimer = Date.now();
         this.explosionSpeed = 200;
         this.explosionImg = [
             'img/asteroidExplosion/asteroidExplosion_01.png',
@@ -326,19 +315,19 @@ class AsteroidNew {
         this.asteroidDiv.classList.add('asteroid');
         gameContainer.append(this.asteroidDiv);
 
-        this.asteroid = new Image();                // создаётся изображение внутри
-        this.asteroid.src = this.src;            
-        this.asteroidDiv.append(this.asteroid);
+        this.asteroidImg = new Image();                // создаётся изображение внутри
+        this.asteroidImg.src = this.src;            
+        this.asteroidDiv.append(this.asteroidImg);
         this.asteroidDiv.style.transform = `translate(${this.coordX}px, -100%)`;
 
-        this.asteroidCoords = getCoords(this.asteroidDiv);// меняются свойства элемента в зависимости от создаваемого р-ра
+        this.coords = getCoords(this.asteroidDiv);// меняются свойства элемента в зависимости от создаваемого р-ра
     }
 
     checkAsteroidExist(array) {
         let x = getRandomIntInclusive(0, gameContainer.clientWidth);
     
         array.forEach(element => {
-            if (element.asteroidCoords.x <= x <= element.asteroidCoords.x + element.asteroidWidth) {
+            if (element.coords.x <= x <= element.coords.x + element.asteroidWidth) {
                 // this.checkAsteroidExist(array);
                 // console.log('test');
             }
@@ -347,33 +336,33 @@ class AsteroidNew {
     }
 
     asteroidMove() {
-        let newYCoord = this.asteroidCoords.y + this.speed;
+        let newYCoord = this.coords.y + this.speed;
         if(newYCoord > gameContainer.offsetHeight) {
-            this.asteroid.remove();
+            this.asteroidDiv.remove();
         }
-        this.asteroid.style.transform = `translate(${this.coordX}px, ${newYCoord}px)`;
-        this.asteroidCoords.y = newYCoord;
+        this.asteroidDiv.style.transform = `translate(${this.coordX}px, ${newYCoord}px)`;
+        this.coords.y = newYCoord;
+
+        this.asteroidExplosionAnimation();
     }
 
     asteroidExplosionAnimation() {
         if(this.collision) {
-            // spaceshipImg.src = this.currentImg;
             let timePassed = Date.now() - this.startTimer;
-    
-            if(this.collision) {
-    
-                if (timePassed >= this.explosionSpeed) {
-                    if(this.explosionImgNumber >= this.explosionImg.length) {
-                        setInterval(this.remove(), this.explosionSpeed);
-    
-                    }   
-                    if(this.explosionImgNumber < this.explosionImg.length) {
-                        this.currentImg = this.explosionImg[this.explosionImgNumber++];
-                        this.startTimer = Date.now();
-                    }
+            this.canRemove = true;
+            if (timePassed >= this.explosionSpeed) {
+                if(this.explosionImgNumber >= this.explosionImg.length) {
+                    setInterval(() => {
+                        this.asteroidDiv.remove();
+                    }, this.explosionSpeed);
+
+                }   
+                if(this.explosionImgNumber < this.explosionImg.length) {
+                    this.asteroidImg.src = this.explosionImg[this.explosionImgNumber++];
+                    this.startTimer = Date.now();
                 }
-                return;
             }
+            return;
         }
     }
 }
@@ -391,37 +380,6 @@ function createAsteroids() {
 
         startCreateAsteroid = Date.now();
     }
-}
-
-function asteroidRemove(array) {
-    array.forEach((element,index) => {
-        if(element.asteroidCoords.y > gameContainer.offsetHeight) {
-            array.splice(index, 1);
-        }
-    });
-}
-
-// Коллизия
-
-function checkCollision(array, obj) {
-    // array.forEach(element => {
-    //     if (element.asteroidCoords.y + element.asteroidWidth > spaceshipInfo.coords.y &&
-    //         element.asteroidCoords.y < spaceshipInfo.coords.y + spaceship.offsetWidth &&
-    //         element.asteroidCoords.x < spaceshipInfo.coords.x + spaceship.offsetWidth && 
-    //         element.asteroidCoords.x + element.asteroidWidth > spaceshipInfo.coords.x) {
-    //             spaceshipInfo.collision = true;
-    //     } 
-    // });
-
-    array.forEach(element => {
-        if (element.asteroidCoords.y + element.asteroidWidth > obj.coords.y &&
-            element.asteroidCoords.y < obj.coords.y + obj.width &&
-            element.asteroidCoords.x < obj.coords.x + obj.width && 
-            element.asteroidCoords.x + element.asteroidWidth > obj.coords.x) {
-                obj.collision = true;
-                element.asteroid.remove();
-        } 
-    });
 }
 
 // создание снаряда
@@ -451,6 +409,7 @@ class MissleNew {
         this.startAnimationMissle = Date.now();
         this.animationMissleInterval = 55;
         this.collision = false;
+        this.canRemove = true;
         Object.assign(this, obj);
     }
 
@@ -496,6 +455,8 @@ class MissleNew {
 
     collisionMissleAsteroid() {
         if(this.collision) {
+            this.coords.y = 1000;
+            this.canRemove = true;
             this.missleDiv.remove();
         }
     }
@@ -508,7 +469,7 @@ let intervalCreatMissles = 700;
 let fireCheck = false;
 function createMissles() {
     let timePassed = Date.now() - startCreateMissles;
-    if(timePassed > intervalCreatAsteroid && fireCheck) {
+    if(timePassed > intervalCreatMissles && fireCheck) {
         const missle = new MissleNew(missleStandart);
         missle.createNewMissle();
         missles.push(missle);
