@@ -258,6 +258,7 @@ document.addEventListener('keyup', (event) => { // Отмена анимации
 
 let small = {
     name: 'small',
+    hitPoints: 1,
     asteroidWidth: 36,
     asteroidHeight: 36,
     speed: 2,
@@ -266,16 +267,18 @@ let small = {
 
 let medium = {
     name: 'medium',
-    asteroidWidth: 66,
-    asteroidHeight: 66,
+    hitPoints: 2,
+    asteroidWidth: 48,
+    asteroidHeight: 48,
     speed: 1.5,
     src: 'img/asteroids/asteroid_02.png',
 };
 
 let large = {
     name: 'large',
-    asteroidWidth: 68,
-    asteroidHeight: 68,
+    hitPoints: 3,
+    asteroidWidth: 66,
+    asteroidHeight: 66,
     speed: 1,
     src: 'img/asteroids/asteroid_03.png',
 };
@@ -286,6 +289,7 @@ let asteroids = [];
 class AsteroidNew {
     constructor(obj) {
         this.name = null;
+        this.hitPoints = null;
         this.speed = null;
         this.asteroidDiv = null;
         this.asteroidImg = null;
@@ -298,7 +302,7 @@ class AsteroidNew {
         this.collision = false;
         this.canRemove = false;
         this.startTimer = Date.now();
-        this.explosionSpeed = 200;
+        this.explosionSpeed = 180;
         this.explosionImg = [
             'img/asteroidExplosion/asteroidExplosion_01.png',
             'img/asteroidExplosion/asteroidExplosion_02.png',
@@ -343,11 +347,19 @@ class AsteroidNew {
         this.asteroidDiv.style.transform = `translate(${this.coordX}px, ${newYCoord}px)`;
         this.coords.y = newYCoord;
 
+        this.asteroidCheckHitpoint();
         this.asteroidExplosionAnimation();
     }
 
-    asteroidExplosionAnimation() {
+    asteroidCheckHitpoint() {
         if(this.collision) {
+            this.hitPoints--;
+            this.collision = false;
+        }
+    }
+
+    asteroidExplosionAnimation() {
+        if(this.hitPoints <= 0) {
             let timePassed = Date.now() - this.startTimer;
             this.canRemove = true;
             if (timePassed >= this.explosionSpeed) {
@@ -421,7 +433,7 @@ class MissleNew {
         this.missle = new Image();
         this.missle.src = this.misslesImg[this.misslesImgNumber];
         this.missleDiv.append(this.missle);
-        this.missleDiv.style.transform = `translate(${spaceshipInfo.coords.x + spaceship.offsetWidth / 2 - this.width / 2}px, ${spaceshipInfo.coords.y - this.height}px)`;
+        this.missleDiv.style.transform = `translate(${spaceshipInfo.coords.x + spaceship.offsetWidth / 2 - this.width / 2}px, ${spaceshipInfo.coords.y}px)`;
 
         this.coords = getCoords(this.missleDiv);
     }

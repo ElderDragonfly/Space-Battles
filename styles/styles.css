@@ -1,6 +1,6 @@
 @import "./reset.css";
 :root {
-    --width-game-container: 1100px;
+    --width-game-container: 700px;
     --height-game-container: 600px;
 }
 
