@@ -1,0 +1,41 @@
+[33mcommit 9f0f38cd2cf9709f04a975285d88b523bbc1deb0[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Thu Sep 7 22:04:22 2023 +0300
+
+    изменение размеров астероидов
+
+[33mcommit 2a75e18547c1f8a460a913d248faa469c137a3a8[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Thu Sep 7 13:27:07 2023 +0300
+
+    полностью готова анимация столкновения всего со всем, взрывов
+
+[33mcommit fff882c25c8e678721e88e9d79acd5b20918e95d[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Mon Sep 4 23:59:47 2023 +0300
+
+    анимированные снаряды, коллизия снарядов с астероидами, без анимации
+
+[33mcommit e1adb45fce07306ed5eb6d5bf4d3c1f62805dd0b[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Wed Aug 30 21:36:43 2023 +0300
+
+    небольште изменения
+
+[33mcommit 4cdce28a4fc7d9a74b8f7294d729b0cb501a6a4f[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Wed Aug 30 21:14:10 2023 +0300
+
+    готова коллизия с анимацией взрыва корабля, всё работает
+
+[33mcommit 415e40e1cfdcb59669fb635f8ae88a62f7c924ab[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Wed Aug 23 23:57:42 2023 +0300
+
+    не могу получить ширину создаваемого астероида
+
+[33mcommit d12b84e0cf35d3be9209482fd9df81d65b008ff1[m
+Author: Konstantin <ElderDragonfly@yandex.ru>
+Date:   Mon Aug 21 17:59:05 2023 +0300
+
+    перед переходом на классы
