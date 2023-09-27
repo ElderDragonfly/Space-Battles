@@ -129,7 +129,7 @@ const spaceshipInfo = {
         spaceshipImg.src = this.currentImg;
         let timePassed = Date.now() - this.startTimer;
 
-        if(this.collision) {
+        if(this.collision) { // Столкновние корабля
 
             cancelAnimationFrame(animationId);    
             cancelAnimationFrame(spaceshipInfo.moveToTopId);    // Отменяется анимация,
@@ -137,9 +137,10 @@ const spaceshipInfo = {
             cancelAnimationFrame(spaceshipInfo.moveToLeftId);
             cancelAnimationFrame(spaceshipInfo.moveToRightId);
 
-            if (timePassed >= this.explosionSpeed) {
-                if(this.explosionImgNumber >= this.explosionImg.length) {
+            if (timePassed >= this.explosionSpeed) { // перебор картинок анимации уничтожения корабля
+                if(this.explosionImgNumber >= this.explosionImg.length) {//таймер, чтобы проигрывалась последняя картинка
                     setInterval(() => {
+                        this.canRemove = !this.canRemove;
                         spaceship.remove();
                     }, this.explosionSpeed);
 

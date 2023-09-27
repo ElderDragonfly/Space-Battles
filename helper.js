@@ -2,6 +2,9 @@
 
 // Коллизия
 export function checkCollision(array, obj) { // столкновения корабля или снаряда с астероидами, записанными в массив
+    // if(obj.canRemove) {
+    //     return;
+    // }
     array.forEach(element => {
         if(element.coords.y + element.asteroidHeight < obj.coords.y || element.coords.y > obj.coords.y + obj.height){ // отсутствие коллизии по y
             return;

@@ -63,7 +63,7 @@
     width: 100vw;
     height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 1.75fr 1fr;
+    grid-template-columns: 1fr 1.2fr 1fr;
 
     background-color: rgb(160, 148, 167);
 }
